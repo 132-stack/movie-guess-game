@@ -1,0 +1,823 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Guess the Movie!</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        /* LANDING PAGE */
+
+        .hero {
+            min-height: 100vh;
+
+            display: flex;
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 35px;
+
+            padding: 20px;
+        }
+
+        .rainbow-text {
+            background: linear-gradient(
+                90deg,
+                red,
+                orange,
+                yellow,
+                green,
+                blue,
+                indigo,
+                violet
+            );
+
+            background-clip: text;
+            -webkit-background-clip: text;
+
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+
+            font-size: clamp(3rem, 12vw, 12.5rem);
+            font-weight: bold;
+        }
+
+        .play-btn {
+            padding: 17px 50px;
+
+            border: none;
+            border-radius: 12px;
+
+            background: linear-gradient(
+                90deg,
+                #8b5cf6,
+                #ec4899
+            );
+
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.25s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.12);
+
+            box-shadow:
+                0 0 20px #8b5cf6,
+                0 0 40px #ec4899;
+        }
+
+        /* RAINBOW FLASH */
+
+        #rainbow-flash {
+            position: fixed;
+            inset: 0;
+
+            background: linear-gradient(
+                90deg,
+                red,
+                orange,
+                yellow,
+                green,
+                blue,
+                indigo,
+                violet
+            );
+
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #rainbow-flash.active {
+            animation: rainbowFlash 0.8s ease-in-out;
+        }
+
+        @keyframes rainbowFlash {
+
+            0% {
+                opacity: 0;
+            }
+
+            40% {
+                opacity: 0.9;
+            }
+
+            100% {
+                opacity: 0;
+            }
+
+        }
+
+        /* GAME SECTION */
+
+        #game {
+            min-height: 100vh;
+
+            padding: 80px 20px;
+
+            background:
+                radial-gradient(
+                    ellipse at top,
+                    #252044,
+                    #111 65%
+                );
+        }
+
+        #game h1 {
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            color: #a78bfa;
+        }
+
+        .subtitle {
+            color: #aaa;
+            font-size: 17px;
+        }
+
+        /* SCORE */
+
+        .score-container {
+            margin: 25px auto;
+
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .score-box {
+            padding: 12px 25px;
+
+            background: #211d35;
+
+            border: 1px solid #514477;
+            border-radius: 12px;
+        }
+
+        .score-box span {
+            color: #c4b5fd;
+            font-weight: bold;
+        }
+
+        /* GAME CARD */
+
+        .game-card {
+            max-width: 650px;
+
+            margin: 35px auto;
+            padding: 35px 20px;
+
+            background: rgba(30, 27, 48, 0.9);
+
+            border: 1px solid #514477;
+            border-radius: 22px;
+
+            box-shadow:
+                0 0 25px #8b5cf622,
+                0 0 60px #8b5cf611;
+        }
+
+        .emoji {
+            font-size: clamp(3rem, 10vw, 6rem);
+
+            margin: 35px 0;
+
+            min-height: 110px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* INPUT */
+
+        .answer-input {
+            width: 90%;
+            max-width: 420px;
+
+            padding: 16px;
+
+            border: 2px solid #8b5cf6;
+            border-radius: 12px;
+
+            outline: none;
+
+            background: #111;
+            color: white;
+
+            font-size: 17px;
+            text-align: center;
+
+            transition: 0.2s;
+        }
+
+        .answer-input:focus {
+            border-color: #ec4899;
+
+            box-shadow: 0 0 15px #8b5cf655;
+        }
+
+        .answer-input:disabled {
+            opacity: 0.5;
+        }
+
+        /* BUTTONS */
+
+        .buttons {
+            margin-top: 20px;
+
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .game-button {
+            padding: 14px 23px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: #8b5cf6;
+            color: white;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        .game-button:hover:not(:disabled) {
+            background: #a78bfa;
+            transform: translateY(-3px);
+        }
+
+        .game-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .next-button {
+            background: #db2777;
+        }
+
+        .next-button:hover:not(:disabled) {
+            background: #ec4899;
+        }
+
+        /* RESULTS */
+
+        #result {
+            margin-top: 25px;
+
+            min-height: 35px;
+
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: #4ade80;
+        }
+
+        .wrong {
+            color: #f87171;
+        }
+
+        .loading {
+            color: #c4b5fd;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+
+        /* HINT */
+
+        #hint {
+            margin-top: 20px;
+
+            color: #c4b5fd;
+            font-size: 16px;
+
+            min-height: 25px;
+        }
+
+        .footer {
+            margin-top: 50px;
+            color: #666;
+            font-size: 13px;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- LANDING PAGE -->
+
+    <section class="hero">
+
+        <div class="rainbow-text">
+            Guess the movie!
+        </div>
+
+        <p class="subtitle">
+            An AI-powered emoji movie guessing game.
+        </p>
+
+        <button
+            class="play-btn"
+            onclick="startGame()"
+        >
+            PLAY! 🌈
+        </button>
+
+    </section>
+
+
+    <!-- RAINBOW FLASH -->
+
+    <div id="rainbow-flash"></div>
+
+
+    <!-- GAME SECTION -->
+
+    <section id="game">
+
+        <h1>🎬 Guess the Movie!</h1>
+
+        <p class="subtitle">
+            Can you identify the movie from the emojis?
+        </p>
+
+
+        <!-- SCORE -->
+
+        <div class="score-container">
+
+            <div class="score-box">
+                Score: <span id="score">0</span>
+            </div>
+
+            <div class="score-box">
+                Correct: <span id="correct-count">0</span>
+            </div>
+
+            <div class="score-box">
+                Wrong: <span id="wrong-count">0</span>
+            </div>
+
+        </div>
+
+
+        <!-- GAME CARD -->
+
+        <div class="game-card">
+
+            <h2>Decode the emojis!</h2>
+
+            <div
+                class="emoji"
+                id="emoji"
+            >
+                🎬 ❓ 🍿
+            </div>
+
+
+            <!-- ANSWER INPUT -->
+
+            <input
+                type="text"
+                id="answer"
+                class="answer-input"
+                placeholder="Enter movie name..."
+                autocomplete="off"
+            >
+
+
+            <!-- GAME BUTTONS -->
+
+            <div class="buttons">
+
+                <button
+                    class="game-button"
+                    id="submit-btn"
+                    onclick="checkAnswer()"
+                >
+                    SUBMIT
+                </button>
+
+                <button
+                    class="game-button"
+                    id="hint-btn"
+                    onclick="getHint()"
+                >
+                    GET HINT 💡
+                </button>
+
+                <button
+                    class="game-button next-button"
+                    id="next-btn"
+                    onclick="newMovie()"
+                >
+                    NEXT MOVIE →
+                </button>
+
+            </div>
+
+
+            <!-- RESULT -->
+
+            <div id="result">
+                Press PLAY to begin!
+            </div>
+
+
+            <!-- HINT -->
+
+            <div id="hint"></div>
+
+        </div>
+
+
+        <div class="footer">
+            Powered by Groq AI
+        </div>
+
+    </section>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+        // ==================================
+        // GAME VARIABLES
+        // ==================================
+
+        let currentGameID = null;
+
+        let gameOver = false;
+
+        let score = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+
+        const emoji = document.getElementById("emoji");
+
+        const answer = document.getElementById("answer");
+
+        const result = document.getElementById("result");
+
+        const hint = document.getElementById("hint");
+
+        const scoreDisplay = document.getElementById("score");
+
+        const correctDisplay = document.getElementById("correct-count");
+
+        const wrongDisplay = document.getElementById("wrong-count");
+
+        const submitBtn = document.getElementById("submit-btn");
+
+        const hintBtn = document.getElementById("hint-btn");
+
+        const nextBtn = document.getElementById("next-btn");
+
+
+        // ==================================
+        // UPDATE SCORE
+        // ==================================
+
+        function updateScore() {
+
+            scoreDisplay.textContent = score;
+
+            correctDisplay.textContent = correctCount;
+
+            wrongDisplay.textContent = wrongCount;
+
+        }
+
+
+        // ==================================
+        // LANDING PAGE TRANSITION
+        // ==================================
+
+        async function startGame() {
+
+            const flash = document.getElementById("rainbow-flash");
+
+            flash.classList.remove("active");
+
+            void flash.offsetWidth;
+
+            flash.classList.add("active");
+
+            setTimeout(() => {
+
+                document.getElementById("game").scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+
+            }, 400);
+
+            await newMovie();
+
+        }
+
+
+        // ==================================
+        // GENERATE NEW MOVIE
+        // ==================================
+
+        async function newMovie() {
+
+            gameOver = false;
+
+            currentGameID = null;
+
+            emoji.textContent = "🤖";
+
+            emoji.classList.add("loading");
+
+            answer.value = "";
+
+            answer.disabled = true;
+
+            result.textContent = "Generating a new movie...";
+
+            result.className = "";
+
+            hint.textContent = "";
+
+            submitBtn.disabled = true;
+
+            hintBtn.disabled = true;
+
+            nextBtn.disabled = true;
+
+            try {
+
+                const response = await fetch("/api/new-movie", {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not generate movie.");
+                }
+
+                currentGameID = data.id;
+
+                emoji.textContent = data.emojis;
+
+                emoji.classList.remove("loading");
+
+                result.textContent = "Your challenge is ready! 🎬";
+
+                result.className = "";
+
+                answer.disabled = false;
+
+                submitBtn.disabled = false;
+
+                hintBtn.disabled = false;
+
+                nextBtn.disabled = false;
+
+                answer.focus();
+
+            } catch (error) {
+
+                emoji.textContent = "⚠️";
+
+                emoji.classList.remove("loading");
+
+                result.textContent = error.message;
+
+                result.className = "wrong";
+
+                nextBtn.disabled = false;
+
+            }
+
+        }
+
+
+        // ==================================
+        // CHECK ANSWER
+        // ==================================
+
+        async function checkAnswer() {
+
+            if (!currentGameID || gameOver) return;
+
+            const guess = answer.value.trim();
+
+            if (!guess) {
+
+                result.textContent = "Enter a movie name first!";
+
+                result.className = "wrong";
+
+                return;
+
+            }
+
+            submitBtn.disabled = true;
+
+            result.textContent = "Checking your answer...";
+
+            result.className = "";
+
+            try {
+
+                const response = await fetch("/api/guess", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        id: currentGameID,
+
+                        guess: guess
+
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not check answer.");
+                }
+
+                if (data.correct) {
+
+                    result.textContent =
+                        "🎉 CORRECT! The movie was " + data.answer + "!";
+
+                    result.className = "correct";
+
+                    gameOver = true;
+
+                    score += 10;
+
+                    correctCount++;
+
+                    answer.disabled = true;
+
+                    submitBtn.disabled = true;
+
+                    hintBtn.disabled = true;
+
+                    updateScore();
+
+                } else {
+
+                    result.textContent =
+                        "❌ WRONG! Try again! Attempts: " + data.attempts;
+
+                    result.className = "wrong";
+
+                    wrongCount++;
+
+                    updateScore();
+
+                    submitBtn.disabled = false;
+
+                    answer.select();
+
+                }
+
+            } catch (error) {
+
+                result.textContent = error.message;
+
+                result.className = "wrong";
+
+                submitBtn.disabled = false;
+
+            }
+
+        }
+
+
+        // ==================================
+        // GET HINT
+        // ==================================
+
+        async function getHint() {
+
+            if (!currentGameID || gameOver) return;
+
+            hintBtn.disabled = true;
+
+            hint.textContent = "Getting hint...";
+
+            try {
+
+                const response = await fetch("/api/hint", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        id: currentGameID
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not get hint.");
+                }
+
+                hint.textContent = "💡 " + data.hint;
+
+            } catch (error) {
+
+                hint.textContent = error.message;
+
+            } finally {
+
+                hintBtn.disabled = false;
+
+            }
+
+        }
+
+
+        // ==================================
+        // ENTER KEY SUPPORT
+        // ==================================
+
+        answer.addEventListener("keydown", function(event) {
+
+            if (event.key === "Enter") {
+                checkAnswer();
+            }
+
+        });
+
+
+        // ==================================
+        // INITIALIZE
+        // ==================================
+
+        updateScore();
+
+    </script>
+
+</body>
+
+</html>
